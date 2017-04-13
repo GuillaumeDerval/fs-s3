@@ -16,6 +16,7 @@ setup(
     description="S3 FileSystem Provider",
     packages=find_packages(),
     install_requires=install_requires,
+    entry_points={'inginious.filesystems': ['s3 = inginious_fs_s3:S3FSProvider']},
     include_package_data=True,
     author="Guillaume Derval",
     author_email="guillaume.derval@uclouvain.be",
