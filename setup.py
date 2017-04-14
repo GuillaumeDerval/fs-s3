@@ -20,6 +20,6 @@ setup(
     include_package_data=True,
     author="Guillaume Derval",
     author_email="guillaume.derval@uclouvain.be",
-    license="Prioritary",
+    license="Proprietary",
     url="https://github.com/UCL-INGI/INGInious"
 )
