@@ -190,7 +190,7 @@ class S3FSProvider(FileSystemProvider):
 
         self._put_file(fullpath, BytesIO(content))
 
-    def get(self, filepath, timestamp=None):
+    def get_fd(self, filepath, timestamp=None):
         self._checkpath(filepath)
 
         fullpath = self.prefix + filepath
@@ -205,13 +205,17 @@ class S3FSProvider(FileSystemProvider):
             local_path = self._cache.get(fullpath, needed_time)
             if local_path is None:
                 print("DOWNLOAD " + fullpath + " FROM S3")
-                content = obj.get()["Body"].read()
-                self._cache.put_file(fullpath, obj.last_modified, content)
-                return content
+                fd = obj.get()["Body"]
+                self._cache.put_file(fullpath, obj.last_modified, fd.read())
+                fd.seek(0)
+                return fd
             else:
-                return open(local_path, 'rb').read()
+                return open(local_path, 'rb')
         except ClientError:
             raise NotFoundException()
+
+    def get(self, filepath, timestamp=None):
+        return self.get_fd(filepath, timestamp).read()
 
     def _compute_relpath(self, path, base):
         out = os.path.relpath(path, base)
