@@ -134,11 +134,11 @@ class S3FSProvider(FileSystemProvider):
         return S3FSProvider(prefix, boto3.client('s3', aws_access_key_id=access_key_id, aws_secret_access_key=secret_access_key), boto3.resource('s3', aws_access_key_id=access_key_id, aws_secret_access_key=secret_access_key).Bucket(bucket), S3CacheManager(cachedir, cachesize * (10 ** 6)))
 
     def __init__(self, prefix, s3client, s3bucket, cache_manager: S3CacheManager):
-        if not prefix.endswith("/"):
-            prefix = prefix + "/"
-        if prefix == "/":  # no initial /
-            prefix = ""
         super().__init__(prefix)
+        if not self.prefix.endswith("/"):
+            self.prefix = self.prefix + "/"
+        if self.prefix == "/":  # no initial /
+            self.prefix = ""
         self._client = s3client
         self._bucket = s3bucket
         self._cache = cache_manager
