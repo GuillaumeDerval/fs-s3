@@ -123,13 +123,15 @@ class S3FSProvider(FileSystemProvider):
             "bucket": (str, True, "S3 bucket to use"),
             "prefix": (str, True, "prefix to be added to files in the bucket"),
             "cachedir": (str, True, "On-disk path to a directory where the cache will be stored"),
-            "cachesize": (int, True, "Size of the cache, in Mo.")
+            "cachesize": (int, True, "Size of the cache, in Mo."),
+            "access_key_id": (str, False, "Access key id"),
+            "secret_access_key": (str, False, "Secret access key")
         }
 
     @classmethod
-    def init_from_args(cls, bucket, prefix, cachedir, cachesize):
+    def init_from_args(cls, bucket, prefix, cachedir, cachesize, access_key_id, secret_access_key):
         """ Given the args from get_needed_args, creates the FileSystemProvider """
-        return S3FSProvider("tasks/", boto3.client('s3'), boto3.resource('s3').Bucket(bucket), S3CacheManager(cachedir, cachesize * (10 ** 6)))
+        return S3FSProvider(prefix, boto3.client('s3', aws_access_key_id=access_key_id, aws_secret_access_key=secret_access_key), boto3.resource('s3', aws_access_key_id=access_key_id, aws_secret_access_key=secret_access_key).Bucket(bucket), S3CacheManager(cachedir, cachesize * (10 ** 6)))
 
     def __init__(self, prefix, s3client, s3bucket, cache_manager: S3CacheManager):
         if not prefix.endswith("/"):
@@ -207,8 +209,7 @@ class S3FSProvider(FileSystemProvider):
                 print("DOWNLOAD " + fullpath + " FROM S3")
                 fd = obj.get()["Body"]
                 self._cache.put_file(fullpath, obj.last_modified, fd.read())
-                fd.seek(0)
-                return fd
+                return open(self._cache.get(fullpath, needed_time), 'rb')
             else:
                 return open(local_path, 'rb')
         except ClientError:
@@ -228,7 +229,7 @@ class S3FSProvider(FileSystemProvider):
             objects = self._bucket.objects.filter(Prefix=self.prefix, Marker=self.prefix).all()
             objects = [self._compute_relpath(f.key, self.prefix) for f in objects]
         else:
-            objects = self._client.list_objects_v2(Bucket=self._bucket.name, Prefix=self.prefix, Delimiter="/")["CommonPrefixes"]
+            objects = self._client.list_objects_v2(Bucket=self._bucket.name, Prefix=self.prefix, Delimiter="/").get("CommonPrefixes", [])
             objects = [self._compute_relpath(f["Prefix"], self.prefix) for f in objects]
 
         out = []

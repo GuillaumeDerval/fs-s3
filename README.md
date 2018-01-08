@@ -4,9 +4,12 @@ Filesystem based on S3-compatible APIs
 Config:
 ```
 fs:
-    module: inginious_fs_s3.S3FSProvider
-    cachedir: s3cache
-    bucket: inginious-test
-    prefix: tasks/
+    module: s3
+    cachedir: 's3cache'
+    bucket: 'inginious-test'
+    prefix: 'tasks/'
     cachesize: 100
+    access_key_id: ''
+    secret_access_key: '' 
 ```
+
