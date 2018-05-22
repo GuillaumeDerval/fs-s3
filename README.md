@@ -1,3 +1,5 @@
+## This is an experiment. You should not use this.
+
 # fs-s3
 Filesystem based on S3-compatible APIs
 
